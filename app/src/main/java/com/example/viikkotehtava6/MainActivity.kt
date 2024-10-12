@@ -1,41 +1,58 @@
 package com.example.viikkotehtava6
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.viikkotehtava6.ui.theme.Viikkotehtava6Theme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             Viikkotehtava6Theme {
-                ScaffoldApp()
+                val navController = rememberNavController()
+                ScaffoldApp(navController)
             }
         }
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScaffoldApp() {
+fun ScaffoldApp(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "Home") {
+        composable("Home") {
+            MainScreen(navController)
+        }
+        composable("Info") {
+            InfoScreen(navController)
+        }
+        composable("Settings") {
+            SettingsScreen(navController)
+        }
+    }
+}
+
+@Composable
+fun MainScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
-            MyTopBar()
+            MainTopBar(title = "My App", navController = navController)
         },
         content = { paddingValues ->
             Text(
@@ -43,45 +60,84 @@ fun ScaffoldApp() {
                 modifier = Modifier.padding(paddingValues)
             )
         }
-        // BottomBar is commented out since we do not want to display it anymore
-        // bottomBar = {
-        //     BottomAppBar {
-        //         Text(text = "Bottom bar")
-        //     }
-        // }
+    )
+}
+
+@Composable
+fun InfoScreen(navController: NavHostController) {
+    Scaffold(
+        topBar = {
+            ScreenTopBar(title = "Info", navController = navController)
+        },
+        content = { paddingValues ->
+            Text(
+                text = "Content for Info screen",
+                modifier = Modifier.padding(paddingValues)
+            )
+        }
+    )
+}
+
+@Composable
+fun SettingsScreen(navController: NavHostController) {
+    Scaffold(
+        topBar = {
+            ScreenTopBar(title = "Settings", navController = navController)
+        },
+        content = { paddingValues ->
+            Text(
+                text = "Content for Settings screen",
+                modifier = Modifier.padding(paddingValues)
+            )
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopBar() {
+fun MainTopBar(title: String, navController: NavHostController) {
     var expanded by remember { mutableStateOf(false) }
     TopAppBar(
         title = {
-            Text(text = "My App")
-        },
-        navigationIcon = {
-            IconButton(onClick = { /* TODO */ }) {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = null)
-            }
+            Text(text = title)
         },
         actions = {
-            IconButton(onClick = {
-                expanded = !expanded
-            }) {
+            IconButton(onClick = { expanded = !expanded }) {
                 Icon(imageVector = Icons.Filled.MoreVert, contentDescription = null)
             }
             DropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }) {
+                onDismissRequest = { expanded = false }
+            ) {
                 DropdownMenuItem(
                     text = { Text("Info") },
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        navController.navigate("Info")
+                        expanded = false
+                    }
                 )
                 DropdownMenuItem(
                     text = { Text("Settings") },
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        navController.navigate("Settings")
+                        expanded = false
+                    }
                 )
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenTopBar(title: String, navController: NavHostController) {
+    TopAppBar(
+        title = {
+            Text(text = title)
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
             }
         }
     )
@@ -90,7 +146,8 @@ fun MyTopBar() {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
+    val navController = rememberNavController()
     Viikkotehtava6Theme {
-        ScaffoldApp()
+        ScaffoldApp(navController)
     }
 }
